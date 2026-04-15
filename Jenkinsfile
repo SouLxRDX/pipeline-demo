@@ -17,10 +17,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building...'
+                echo "Building on branch: ${env.BRANCH_NAME}"
                 sh '''
                     mkdir -p build
-                    echo "Artifact v${BUILD_NUMBER}" > build/output.txt
+                    echo "Artifact v${BUILD_NUMBER} from ${BRANCH_NAME}" > build/output.txt
                     cat build/output.txt
                 '''
             }
