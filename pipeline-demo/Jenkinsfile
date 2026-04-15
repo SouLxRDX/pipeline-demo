@@ -1,10 +1,57 @@
-stage('Build') {
-    steps {
-        echo "Building on branch: ${env.BRANCH_NAME}"
-        sh '''
-            mkdir -p build
-            echo "Artifact v${BUILD_NUMBER} from ${BRANCH_NAME}" > build/output.txt
-            cat build/output.txt
-        '''
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'pipeline-demo'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "Branch: ${env.GIT_BRANCH}"
+                echo "Build number: ${env.BUILD_NUMBER}"
+                sh 'ls -la'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building on branch: ${env.BRANCH_NAME}"
+                sh '''
+                    mkdir -p build
+                    echo "Artifact v${BUILD_NUMBER} from ${BRANCH_NAME}" > build/output.txt
+                    cat build/output.txt
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing...'
+                sh '''
+                    test -f build/output.txt && echo "PASS: file exists" || echo "FAIL"
+                    grep "Artifact" build/output.txt && echo "PASS: content ok" || echo "FAIL"
+                '''
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'build/**', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "SUCCESS: Build #${BUILD_NUMBER} passed!"
+        }
+        failure {
+            echo "FAILED: Build #${BUILD_NUMBER} failed!"
+        }
+        always {
+            cleanWs()
+        }
     }
 }
