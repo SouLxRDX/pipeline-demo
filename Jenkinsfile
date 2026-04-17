@@ -18,7 +18,6 @@ pipeline {
             steps {
                 checkout scm
                 echo "Building: ${IMAGE_NAME}"
-                echo "Environment: ${params.ENVIRONMENT}"
             }
         }
 
@@ -54,22 +53,21 @@ pipeline {
                 '''
             }
         }
+
+        stage('Cleanup') {
+            steps {
+                sh 'docker logout || true'
+                cleanWs()
+            }
+        }
     }
 
     post {
         success {
             echo "SUCCESS: ${IMAGE_NAME} built and deployed!"
         }
-
         failure {
             echo "FAILED: Build #${BUILD_NUMBER} failed!"
-        }
-
-        always {
-            node('any') {
-                sh 'docker logout || true'
-                cleanWs()
-            }
         }
     }
 }
