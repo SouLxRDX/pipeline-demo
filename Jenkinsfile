@@ -60,14 +60,16 @@ pipeline {
         success {
             echo "SUCCESS: ${IMAGE_NAME} built and deployed!"
         }
+
         failure {
             echo "FAILED: Build #${BUILD_NUMBER} failed!"
         }
+
         always {
-            script {
+            node {
                 sh 'docker logout || true'
+                cleanWs()
             }
-            cleanWs()
         }
     }
 }
