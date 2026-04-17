@@ -66,7 +66,7 @@ pipeline {
         }
 
         always {
-            node {
+            node('any') {
                 sh 'docker logout || true'
                 cleanWs()
             }
