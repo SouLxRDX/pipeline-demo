@@ -19,20 +19,17 @@ pipeline {
                 checkout scm
                 echo "Building: ${IMAGE_NAME}"
                 echo "Environment: ${params.ENVIRONMENT}"
-                sh 'ls -la'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
                 sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
         stage('Test Image') {
             steps {
-                echo "Testing Docker image..."
                 sh '''
                 docker run --rm ${IMAGE_NAME} python -c "print('Container test passed!')"
                 '''
@@ -41,19 +38,15 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                echo "Logging into Docker Hub..."
                 sh '''
                 echo "$DOCKER_HUB_PSW" | docker login -u "$DOCKER_HUB_USR" --password-stdin
+                docker push ${IMAGE_NAME}
                 '''
-
-                echo "Pushing image..."
-                sh "docker push ${IMAGE_NAME}"
             }
         }
 
         stage('Run Container') {
             steps {
-                echo "Running container..."
                 sh '''
                 docker stop ${APP_NAME} || true
                 docker rm ${APP_NAME} || true
@@ -71,9 +64,9 @@ pipeline {
             echo "FAILED: Build #${BUILD_NUMBER} failed!"
         }
         always {
-            sh '''
-            docker logout || true
-            '''
+            script {
+                sh 'docker logout || true'
+            }
             cleanWs()
         }
     }
