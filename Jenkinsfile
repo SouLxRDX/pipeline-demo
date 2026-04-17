@@ -32,31 +32,24 @@ pipeline {
         stage('Test Image') {
             steps {
                 echo "Testing Docker image..."
-                sh """
-                    docker run --rm ${IMAGE_NAME} python -c "print('Container test passed!')"
-                """
+                sh "docker run --rm ${IMAGE_NAME} python -c \"print('Container test passed!')\""
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 echo "Pushing to Docker Hub..."
-                sh """
-                    echo $DOCKER_HUB_PSW | docker login -u $DOCKER_HUB_USR --password-stdin
-                    docker push ${IMAGE_NAME}
-                """
+                sh "echo $DOCKER_HUB_PSW | docker login -u $DOCKER_HUB_USR --password-stdin"
+                sh "docker push ${IMAGE_NAME}"
             }
         }
 
         stage('Run Container') {
             steps {
                 echo "Running container..."
-                sh """
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
-                    docker run -d --name ${APP_NAME} -p 8000:8000 ${IMAGE_NAME}
-                    echo "Container running at http://$(curl -s ifconfig.me):8000"
-                """
+                sh "docker stop ${APP_NAME} || true"
+                sh "docker rm ${APP_NAME} || true"
+                sh "docker run -d --name ${APP_NAME} -p 8000:8000 ${IMAGE_NAME}"
             }
         }
     }
